@@ -1,0 +1,71 @@
+services:
+  server-dev:
+    build:
+      context: .
+      dockerfile: server/Dockerfile.server
+      target: dev
+    container_name: mern-server-dev
+    volumes:
+      - ./server:/app
+    ports:
+      - ${SERVER_PORT_DEV}:${SERVER_PORT_DEV}
+    environment:
+      - NODE_ENV=development
+      - MONGO_URI=${MONGO_URI_DEV}
+    depends_on:
+      - db
+
+  client-dev:
+    build:
+      context: .
+      dockerfile: client/Dockerfile.client
+      target: dev
+    container_name: mern-client-dev
+    volumes:
+      - ./client:/app
+    ports:
+      - ${CLIENT_PORT_DEV}:${CLIENT_PORT_DEV}
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=${REACT_APP_API_URL_DEV}
+    depends_on:
+      - server-dev
+
+  server-prod:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.server
+      target: prod
+    container_name: mern-server-prod
+    ports:
+      - ${SERVER_PORT_PROD}:${SERVER_PORT_DEV}
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=${MONGO_URI}
+    depends_on:
+      - db
+
+  client-prod:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.client
+      target: prod
+    container_name: mern-client-prod
+    ports:
+      - ${CLIENT_PORT_PROD}:${CLIENT_PORT_NGINX}
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=${REACT_APP_API_URL_PROD}
+    depends_on:
+      - server-prod
+
+  db:
+    image: mongo:7.0
+    container_name: mern-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mern_db:/data/db
+
+volumes:
+  mern_db:
